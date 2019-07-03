@@ -1,6 +1,7 @@
 package godbc
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 )
@@ -47,4 +48,23 @@ func TestExecuteUpdate(t *testing.T) {
 	}
 
 	fmt.Println(res.RowsAffected())
+}
+
+func TestExecuteScan(t *testing.T) {
+	db, err := CreateDb("mysql", "root", "", "127.0.0.1", 3306, "gosql", true)
+	if nil != err {
+		t.Fatal(err)
+		return
+	}
+	defer db.Close()
+
+	ExecuteScan(db, "select task_id, status FROM engine_task ORDER BY task_id DESC limit ?", func(rows *sql.Rows) error {
+		id := 0
+		status := ""
+		rows.Scan(&id, &status)
+
+		fmt.Printf("%d, %s\n", id, status)
+
+		return nil
+	}, 3)
 }
